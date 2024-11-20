@@ -12,7 +12,23 @@
 
 react 文档：https://zh-hans.react.dev/learn
 
-react 项目模板：https://github.com/huangmingfu/react-ts-template
+---
+
+> 下面的react状态管理库如何选择？Redux、Dva、React-Toolkit、MobX，zustand，以及 useContext 结合 useReducer 的管理方式
+
+Redux系列：Redux Toolkit > Redux > Dva
+
+推荐尽量选择现代化、社区活跃的库（如 Redux Toolkit 或 Zustand）
+
+最终，react技术栈选择：Vite + React + Ant Design + Zustand + TailwindCSS
+
+
+react 项目模板：
+- slash-admin(1.8k): https://github.com/d3george/slash-admin (需要的依赖好多)
+- react-ts-template：https://github.com/huangmingfu/react-ts-template （没有ant design，依赖多）
+- react-app-template：https://github.com/Gzbox/react-app-template （没有Zustand）
+
+---
 
 ## React 的不可变数据设计
 
