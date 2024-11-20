@@ -25,7 +25,7 @@ Redux系列：Redux Toolkit > Redux > Dva
 
 react 项目模板：
 - slash-admin(1.8k): https://github.com/d3george/slash-admin (需要的依赖好多)
-- react-ts-template：https://github.com/huangmingfu/react-ts-template （没有ant design，依赖多）
+- react-ts-template：https://github.com/huangmingfu/react-ts-template （依赖多，没有ant design，因为考虑到移动端，对应的就是antd mobile了）
 - react-app-template：https://github.com/Gzbox/react-app-template （没有Zustand）
 
 ---
