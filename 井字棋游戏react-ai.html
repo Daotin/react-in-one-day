@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tic Tac Toe</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      .game {
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+
+      .game-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 16px;
+      }
+
+      .game-status {
+        margin-bottom: 16px;
+        font-size: 18px;
+      }
+
+      .board-row {
+        display: flex;
+      }
+
+      .square {
+        width: 80px;
+        height: 80px;
+        border: 1px solid #ccc;
+        background: white;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .square:hover {
+        background: #f0f0f0;
+      }
+
+      .history {
+        margin-top: 24px;
+      }
+
+      .reset-button {
+        margin-bottom: 16px;
+        padding: 8px 16px;
+        background: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .reset-button:hover {
+        background: #1976d2;
+      }
+
+      .history-button {
+        margin-bottom: 8px;
+        padding: 6px 12px;
+        background: #e0e0e0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .history-button:hover {
+        background: #d0d0d0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      // 使用React hooks
+      const { useState, useCallback, useMemo } = React;
+
+      // 游戏逻辑hook
+      function useGameLogic() {
+        const [squares, setSquares] = useState(Array(9).fill(null));
+        const [history, setHistory] = useState([{ squares: Array(9).fill(null) }]);
+
+        // 计算下一步是谁
+        const xIsNext = useMemo(() => {
+          return squares.filter((square) => square !== null).length % 2 === 0;
+        }, [squares]);
+
+        // 计算赢家
+        const calculateWinner = useCallback((squares) => {
+          const lines = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+          ];
+          for (const [a, b, c] of lines) {
+            if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+              return squares[a];
+            }
+          }
+          return null;
+        }, []);
+
+        // 处理点击
+        const handleClick = useCallback(
+          (i) => {
+            const newSquares = squares.slice();
+
+            if (calculateWinner(newSquares) || newSquares[i]) {
+              return;
+            }
+
+            newSquares[i] = xIsNext ? 'X' : 'O';
+            setSquares(newSquares);
+            setHistory([...history, { squares: newSquares }]);
+          },
+          [history, squares, calculateWinner, xIsNext]
+        );
+
+        // 跳转历史
+        const jumpTo = useCallback(
+          (i) => {
+            setSquares(history[i].squares);
+            setHistory(history.slice(0, i + 1));
+          },
+          [history]
+        );
+
+        // 重置游戏
+        const resetGame = useCallback(() => {
+          setSquares(Array(9).fill(null));
+          setHistory([{ squares: Array(9).fill(null) }]);
+        }, []);
+
+        return {
+          squares,
+          xIsNext,
+          history,
+          handleClick,
+          jumpTo,
+          resetGame,
+          calculateWinner,
+        };
+      }
+
+      // 方格组件
+      function Square({ value, onClick }) {
+        return (
+          <button className='square' onClick={onClick}>
+            {value}
+          </button>
+        );
+      }
+
+      // 主游戏组件
+      function TicTacToe() {
+        const { squares, xIsNext, history, handleClick, jumpTo, resetGame, calculateWinner } = useGameLogic();
+
+        const squareWidth = 3;
+
+        const winner = calculateWinner(squares);
+        const status = winner ? `Winner: ${winner}` : `Next player: ${xIsNext ? 'X' : 'O'}`;
+
+        return (
+          <div className='game'>
+            <h1 className='game-title'>Tic Tac Toe</h1>
+
+            <div className='game-status'>{status}</div>
+
+            <div className='board'>
+              {Array(squareWidth)
+                .fill(null)
+                .map((_, row) => (
+                  <div key={row} className='board-row'>
+                    {Array(squareWidth)
+                      .fill(null)
+                      .map((_, col) => {
+                        const index = row * 3 + col;
+                        return <Square key={index} value={squares[index]} onClick={() => handleClick(index)} />;
+                      })}
+                  </div>
+                ))}
+            </div>
+
+            <div className='history'>
+              <button className='reset-button' onClick={resetGame}>
+                Reset Game
+              </button>
+              <div>
+                {history.map((_, move) => (
+                  <div key={move}>
+                    <button className='history-button' onClick={() => jumpTo(move)}>
+                      {move === 0 ? 'Go to game start' : `Go to move #${move}`}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 渲染应用
+      const container = document.getElementById('root');
+      const root = ReactDOM.createRoot(container);
+      root.render(<TicTacToe />);
+    </script>
+  </body>
+</html>

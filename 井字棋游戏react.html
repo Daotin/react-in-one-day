@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello World</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      .square-box {
+        display: grid;
+        grid-template-columns: repeat(3, 50px);
+        grid-template-rows: repeat(3, 50px);
+      }
+      .square-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      function Game() {
+        const [squareWidth, setSquareWidth] = React.useState(3);
+        const [squareArray, setSquareArray] = React.useState(Array.from({ length: squareWidth * squareWidth }, (v, i) => ''));
+        const [history, setHistory] = React.useState([]);
+        const [nextStep, setNextStep] = React.useState('X');
+        const [winner, setWinner] = React.useState('');
+
+        function gameReset() {
+          setSquareArray(Array.from({ length: squareWidth * squareWidth }, (v, i) => ''));
+          setHistory([]);
+          setWinner('');
+          setNextStep('X');
+        }
+
+        function updateNextStep() {
+          console.log('squareArray==>', squareArray.filter((item) => item !== '').length % 2);
+
+          const step = squareArray.filter((item) => item !== '').length % 2 === 0 ? 'X' : 'O';
+          setNextStep(step);
+        }
+
+        function handleBack(i) {
+          const historicalSquares = history[i];
+          setSquareArray(historicalSquares);
+          setHistory(history.slice(0, i + 1));
+          const nextPlayer = historicalSquares.filter((item) => item !== '').length % 2 === 0 ? 'X' : 'O';
+          setNextStep(nextPlayer);
+          setWinner('');
+        }
+
+        return (
+          <div>
+            <div>Next step: {nextStep}</div>
+            <Board
+              squareWidth={squareWidth}
+              squareArray={squareArray}
+              setSquareArray={setSquareArray}
+              nextStep={nextStep}
+              setNextStep={setNextStep}
+              updateNextStep={updateNextStep}
+              winner={winner}
+              setWinner={setWinner}
+              history={history}
+              setHistory={setHistory}
+            />
+            <div className='history'>
+              <button onClick={gameReset}>Game reset</button>
+              {history.length > 0 &&
+                history.map((item, i) => (
+                  <div key={i}>
+                    <button onClick={() => handleBack(i)}>Go to move #{i}</button>
+                  </div>
+                ))}
+            </div>
+          </div>
+        );
+      }
+
+      function Board({ squareWidth, squareArray, setSquareArray, nextStep, setNextStep, winner, setWinner, history, setHistory }) {
+        function handleClickSquare(i) {
+          if (squareArray[i] !== '' || winner) {
+            return;
+          }
+          const newSquareArray = [...squareArray];
+          newSquareArray[i] = nextStep;
+
+          const nextPlayer = newSquareArray.filter((item) => item !== '').length % 2 === 0 ? 'X' : 'O';
+
+          setSquareArray(newSquareArray);
+
+          setHistory([...history, newSquareArray]);
+          setNextStep(nextPlayer);
+
+          const newWinner = checkWinner(newSquareArray);
+          if (newWinner) {
+            setWinner(newWinner);
+          }
+
+          if (newWinner) {
+            setTimeout(() => {
+              alert(`${newWinner} is winner!`);
+            }, 0);
+          }
+        }
+
+        function checkWinner(squares) {
+          const lines = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+          ];
+          for (let i = 0; i < lines.length; i++) {
+            const [a, b, c] = lines[i];
+            if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+              return squares[a];
+            }
+          }
+          return null;
+        }
+
+        return (
+          <div className='square-box'>
+            <Square squareArray={squareArray} squareWidth={squareWidth} onSquareClick={handleClickSquare} />
+          </div>
+        );
+      }
+
+      function Square({ squareArray, squareWidth, onSquareClick }) {
+        return (
+          <>
+            {squareArray.map((item, i) => (
+              <span className='square-item' key={i} onClick={() => onSquareClick(i)}>
+                {item}
+              </span>
+            ))}
+          </>
+        );
+      }
+
+      const container = document.getElementById('root');
+      const root = ReactDOM.createRoot(container);
+      root.render(<Game />);
+    </script>
+  </body>
+</html>

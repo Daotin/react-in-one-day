@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .square-box {
+        display: grid;
+        grid-template-columns: repeat(3, 50px);
+        grid-template-rows: repeat(3, 50px);
+      }
+      .square-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div>Next step: {{nextStep}}</div>
+      <div class="square-box">
+        <span class="square-item" v-for="(item, i) in squareWidth*squareWidth" @click="handleClickSquare(i)">{{squareArray[i]}}</span>
+      </div>
+
+      <div class="history">
+        <button @click="handleReset">reset</button>
+        <div v-for="(item, i) in history">
+          <button @click="handleBack(i)">Go to move #{{i}}</button>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script type="importmap">
+    {
+      "imports": {
+        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+      }
+    }
+  </script>
+  <script type="module">
+    import { createApp, ref, computed, watch, nextTick } from 'vue';
+
+    createApp({
+      setup() {
+        const squareWidth = ref(3);
+        const nextStep = ref('X');
+        const winner = ref('');
+
+        const squareArray = ref(Array.from({ length: squareWidth.value * squareWidth.value }, (v, i) => ''));
+        const history = ref([]);
+
+        function handleClickSquare(i) {
+          if (squareArray.value[i] !== '' || winner.value) {
+            return;
+          }
+
+          squareArray.value[i] = nextStep.value;
+
+          console.log('squareArray==>', JSON.stringify(squareArray.value));
+
+          history.value.push([...squareArray.value]);
+
+          console.log('history==>', JSON.stringify(history.value));
+
+          updateNextStep();
+
+          winner.value = getWinner();
+          if (winner.value) {
+            setTimeout(() => {
+              alert(`${winner.value} is winner!`);
+            }, 0);
+          }
+        }
+
+        function updateNextStep() {
+          const noEmptyCount = squareArray.value.filter((v) => v !== '').length;
+          nextStep.value = noEmptyCount % 2 === 0 ? 'X' : 'O';
+        }
+
+        function getWinner() {
+          const lines = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+          ];
+          for (let [a, b, c] of lines) {
+            if (squareArray.value[a] && squareArray.value[a] === squareArray.value[b] && squareArray.value[a] === squareArray.value[c]) {
+              return squareArray.value[a];
+            }
+          }
+        }
+
+        function handleReset() {
+          squareArray.value = Array.from({ length: squareWidth.value * squareWidth.value }, (v, i) => '');
+          winner.value = '';
+          nextStep.value = 'X';
+          history.value = [];
+        }
+
+        function handleBack(i) {
+          squareArray.value = [...history.value[i]];
+          history.value = [...history.value.slice(0, i + 1)];
+          console.log('handleBack==>', JSON.stringify(history.value));
+          updateNextStep();
+          winner.value = '';
+          // console.log('handleBack==>', squareArray.value);
+        }
+
+        return {
+          squareWidth,
+          squareArray,
+          handleClickSquare,
+          nextStep,
+          handleReset,
+          history,
+          handleBack,
+        };
+      },
+    }).mount('#app');
+  </script>
+</html>
